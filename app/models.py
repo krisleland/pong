@@ -1,31 +1,15 @@
-from app import db
+from app import db, login
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 
-class Hand(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    hand = db.Column(db.String(64), unique=True)
-
-    def __repr__(self):
-        return '<{} Hand>'.format(self.hand)
-
-
-class Paddle(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    hardness = db.Column(db.String(64))
-
-    def __repr__(self):
-        return '<{} Paddle>'.format(self.hardness)
-
-
-class User(Usermixin, db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), index=True, unique=True)
-    name = db.Column(db.String(60), index=True)
-    handedness = db.Column(db.Integer, db.ForeignKey(Hand.id), index=True)
-    paddle_type = db.Column(db.Integer, db.ForeignKey(Paddle.id), index=True)
+    name = db.Column(db.String(64), index=True)
+    handedness = db.Column(db.String(64), index=True)
+    paddle_type = db.Column(db.String(64), index=True)
     elo = db.Column(db.Float, index=True, unique=True, default=1500.000)
     wins = db.Column(db.Integer, default=0)
     losses = db.Column(db.Integer, default=0)
