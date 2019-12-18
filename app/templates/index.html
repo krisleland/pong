@@ -2,5 +2,37 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-    <h1>Hi, {{ current_user.username }}!</h1>
+    {% if current_user.is_anonymous %}
+    <h1 class="text-center">Welcome</h1>
+    {% else %}
+    <h1 class="text-center">Hi, {{ current_user.name }}!</h1>
+    {% endif %}
+    <table class="table table-hover" id="standings-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Elo</th>
+            <th>Wins</th>
+            <th>Losses</th>
+        <tr>
+    </thead>
+    <tbody>
+        {% for player in players %}
+            {% if player == current_user %}
+                <tr class="current-player">
+            {% elif player in challenge_players %}
+                <tr class="challenge-player" onclick="document.location = '{{url_for('challenge', variable=player.id)}}';">
+            {% else %}
+                <tr>
+            {% endif %}
+                <td>{{ player.name }}</td>
+                <td>{{ player.email }}</td>
+                <td>{{ player.elo }}</td>
+                <td>{{ player.wins }}</td>
+                <td>{{ player.losses }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
 {% endblock %}

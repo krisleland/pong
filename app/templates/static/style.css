@@ -1,0 +1,28 @@
+#nav-header-base {
+    background-color:#ed601a;
+    color:#ffffff;
+}
+
+.glyphicon, a.header-link {
+    color: #ffffff;
+}
+
+.navbar-default .navbar-nav>li>a {
+    color: #ffffff;
+}
+
+#standings-table {
+    margin-left:15%;
+    width:70%;
+    margin-right:15%;
+}
+
+tr.current-player {
+    background-color: #4f595b;
+    color: #9CA3A5
+}
+
+tr.challenge-player {
+    color: #9CA3A5;
+    background-color: #3d103b;
+}

@@ -7,16 +7,14 @@ from flask_login import UserMixin
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), index=True, unique=True)
-    name = db.Column(db.String(64), index=True)
+    name = db.Column(db.String(64), index=True, unique=True)
     handedness = db.Column(db.String(64), index=True)
     paddle_type = db.Column(db.String(64), index=True)
-    elo = db.Column(db.Float, index=True, unique=True, default=1500.000)
+    elo = db.Column(db.Float, index=True, default=1500.000)
     wins = db.Column(db.Integer, default=0)
     losses = db.Column(db.Integer, default=0)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     password_hash = db.Column(db.String(128))
-    hand = db.relationship('Hand', foreign_keys='User.handedness')
-    paddle = db.relationship('Paddle', foreign_keys='User.paddle_type')
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

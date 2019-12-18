@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DecimalField
 from wtforms.validators import DataRequired, Email, EqualTo
 from app.models import User
 
@@ -30,3 +30,12 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
             raise ValidationError('Please use a different email address.')
+
+
+class ChallengeForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    handedness = SelectField(u'Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
+    paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
+    elo = DecimalField('Elo', validators=[DataRequired()])
+    wins = IntegerField('Wins', validators=[DataRequired()])
+    losses = IntegerField('Losses', validators=[DataRequired()])
