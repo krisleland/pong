@@ -15,12 +15,15 @@
             <th>Elo</th>
             <th>Wins</th>
             <th>Losses</th>
+            <th>Active Challenge</th>
         <tr>
     </thead>
     <tbody>
         {% for player in players %}
             {% if player == current_user %}
                 <tr class="current-player">
+            {% elif player.id in unresolved_challenges %}
+                <tr class="challenger-player">
             {% elif player in challenge_players %}
                 <tr class="challenge-player" onclick="document.location = '{{url_for('challenge', challenged_id=player.id)}}';">
             {% else %}
@@ -31,6 +34,7 @@
                 <td>{{ player.elo }}</td>
                 <td>{{ player.wins }}</td>
                 <td>{{ player.losses }}</td>
+                <td>{{ player.id in unresolved_challenges }}</td>
             </tr>
         {% endfor %}
     </tbody>

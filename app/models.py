@@ -8,7 +8,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), index=True, unique=True)
     name = db.Column(db.String(64), index=True, unique=True)
-    handedness = db.Column(db.String(64), index=True)
+    is_lefty = db.Column(db.Integer, index=True, default=0)
+    is_righty = db.Column(db.Integer, index=True, default=0)
     paddle_type = db.Column(db.String(64), index=True)
     elo = db.Column(db.Float, index=True, default=1500.000)
     wins = db.Column(db.Integer, default=0)
@@ -35,6 +36,18 @@ class Match(db.Model):
     season = db.Column(db.Integer)
     winner = db.relationship('User', foreign_keys='Match.winner_id')
     loser = db.relationship('User', foreign_keys='Match.loser_id')
+
+
+class Challenge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    challenger_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    challenged_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    date_added = db.Column(db.DateTime, default=datetime.now)
+    resolved_match_id = db.Column(db.Integer, db.ForeignKey(Match.id), nullable=True)
+    season = db.Column(db.Integer, default=1)
+    challenger = db.relationship('User', foreign_keys='Challenge.challenger_id')
+    challenged = db.relationship('User', foreign_keys='Challenge.challenged_id')
+    match = db.relationship('Match', foreign_keys='Challenge.resolved_match_id')
 
 
 @login.user_loader

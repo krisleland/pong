@@ -39,3 +39,10 @@ class ChallengeForm(FlaskForm):
     elo = DecimalField('Elo', validators=[DataRequired()])
     wins = IntegerField('Wins', validators=[DataRequired()])
     losses = IntegerField('Losses', validators=[DataRequired()])
+    submit = SubmitField('')
+
+
+class MatchPostForm(FlaskForm):
+    challenger = SelectField(u'Challenger', choices=[])
+    win_or_lose = SelectField(u'Result', choices=[('win', 'Win'), ('lose', 'Lose')])
+    submit = SubmitField('Post Match')
