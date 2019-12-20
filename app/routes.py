@@ -73,7 +73,7 @@ def challenge(challenged_id):
     challenged_user = User.query.get(challenged_id)
     challenger_form = ChallengeForm()
     challenged_form = ChallengeForm()
-    challenger_form = _challenge_form_setter(challenger_form, current_user)
-    challenged_form = _challenge_form_setter(challenged_form, challenged_user)
+    challenger_form = _challenge_form_setter(current_user, challenger_form)
+    challenged_form = _challenge_form_setter(challenged_user, challenged_form)
     return render_template('challenge.html', title='Challenge', challenger_form=challenger_form, challenged_form=challenged_form)
 
