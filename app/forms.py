@@ -37,8 +37,8 @@ class ChallengeForm(FlaskForm):
     handedness = SelectField(u'Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
     paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
     elo = DecimalField('Elo', validators=[DataRequired()])
-    wins = IntegerField('Wins', validators=[DataRequired()])
-    losses = IntegerField('Losses', validators=[DataRequired()])
+    wins = IntegerField('Wins')
+    losses = IntegerField('Losses')
     submit = SubmitField('')
 
 

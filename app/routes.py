@@ -4,7 +4,8 @@ from app.forms import LoginForm, RegistrationForm, ChallengeForm, MatchPostForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
-from app.route_helper import _challenge_form_setter, _elo_calculator
+from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
+from app.route_helper import _resolve_challenge
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -20,15 +21,7 @@ def index():
         if high_index > len(players):
             high_index = len(players)
         challenge_players = players[low_index:high_index]
-        unresolved_challengers = []
-        unresolved_challenges = Challenge.query.filter_by(
-            challenger_id=current_user.id, resolved_match_id=None).all()
-        for challenge in unresolved_challenges:
-            unresolved_challengers.append(challenge.challenged_id)
-        unresolved_challenges = Challenge.query.filter_by(
-            challenged_id=current_user.id, resolved_match_id=None).all()
-        for challenge in unresolved_challenges:
-            unresolved_challengers.append(challenge.challenger_id)
+        unresolved_challengers = _get_unresolved_challenger_ids(current_user)
     else:
         challenge_players = []
         unresolved_challengers = []
@@ -66,8 +59,7 @@ def register():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(email=form.email.data, name=form.name.data, handedness=form.handedness.data,
-                    paddle_type=form.paddle.data)
+        user = _create_user(form)
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
@@ -99,12 +91,16 @@ def challenge(challenged_id):
                            challenged_form=challenged_form)
 
 
+@app.route('/post/<challenged_id>')
 @app.route('/post', methods=['GET', 'POST'])
-def post():
+def post(challenged_id=None):
     players = User.query.all()
     post_form = MatchPostForm()
     for player in players:
         post_form.challenger.choices += [(player.name, player.name.capitalize())]
+    if challenged_id is not None:
+        challenged_player = User.query.filter_by(id=challenged_id).first()
+        post_form.challenger = challenged_player.name
     if post_form.validate_on_submit():
         if post_form.win_or_lose.data == 'win':
             winner = current_user
@@ -112,9 +108,16 @@ def post():
         else:
             winner = User.query.filter_by(name=post_form.challenger.data).first()
             loser = current_user
-        match = Match(winner_id=winner.id, loser_id=loser.id, resolved_challenge_id=-1, season=1)
+        resolve_challenge = _resolve_challenge(winner, loser)
+        if resolve_challenge is not None:
+            match = Match(winner_id=winner.id, loser_id=loser.id, resolved_challenge_id=resolve_challenge.id)
+        else:
+            match = Match(winner_id=winner.id, loser_id=loser.id)
         _elo_calculator(winner, loser)
         db.session.add(match)
+        db.session.commit()
+        if resolve_challenge is not None:
+            resolve_challenge.resolved_match_id = match.id
         winner.wins = User.wins + 1
         loser.losses = User.losses + 1
         db.session.commit()
