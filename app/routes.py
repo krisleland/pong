@@ -91,17 +91,19 @@ def challenge(challenged_id):
                            challenged_form=challenged_form)
 
 
-@app.route('/post/<challenged_id>')
+@app.route('/post/<challenged_id>', methods=['GET', 'POST'])
 @app.route('/post', methods=['GET', 'POST'])
 def post(challenged_id=None):
+    if current_user.is_anonymous:
+        return redirect(url_for('index'))
     print(challenged_id is None)
-    players = User.query.all()
+    players = User.query.order_by(User.name)
     post_form = MatchPostForm()
     for player in players:
         post_form.challenger.choices += [(player.name, player.name.capitalize())]
     if challenged_id is not None:
         challenged_player = User.query.filter_by(id=challenged_id).first()
-        post_form.challenger = challenged_player.name
+        post_form.challenger.data = challenged_player.name
     if post_form.validate_on_submit():
         if post_form.win_or_lose.data == 'win':
             winner = current_user
