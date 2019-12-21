@@ -94,6 +94,7 @@ def challenge(challenged_id):
 @app.route('/post/<challenged_id>')
 @app.route('/post', methods=['GET', 'POST'])
 def post(challenged_id=None):
+    print(challenged_id is None)
     players = User.query.all()
     post_form = MatchPostForm()
     for player in players:

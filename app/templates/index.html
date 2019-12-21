@@ -23,7 +23,7 @@
             {% if player == current_user %}
                 <tr class="current-player">
             {% elif player.id in unresolved_challenges %}
-                <tr class="challenger-player">
+                <tr class="challenger-player" onclick="document.location = '{{url_for('post', challenged_id=player.id)}}';">
             {% elif player in challenge_players %}
                 <tr class="challenge-player" onclick="document.location = '{{url_for('challenge', challenged_id=player.id)}}';">
             {% else %}
