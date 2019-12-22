@@ -6,7 +6,7 @@ from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
 from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
 from app.route_helper import _resolve_challenge
-from app.aiml import _get_linear_regression_model
+from app.aiml import get_data_frame, get_confusion_matrix, get_correlation_matrix
 import io
 
 
@@ -73,9 +73,12 @@ def register():
 
 @app.route('/challenge/<challenged_id>', methods=['GET', 'POST'])
 def challenge(challenged_id):
-    graph1_url = _get_linear_regression_model()
     if current_user.is_anonymous:
         return redirect(url_for('index'))
+    data_frame = get_data_frame()
+    correlation_matrix = get_correlation_matrix(data_frame)
+    #confusion_matrix = get_confusion_matrix(data_frame)
+    print(challenged_id)
     challenged_user = User.query.get(challenged_id)
     challenger_form = ChallengeForm()
     challenged_form = ChallengeForm()
@@ -91,7 +94,7 @@ def challenge(challenged_id):
         flash('You have challenged {player}!'.format(player=challenged_user.name))
         return redirect(url_for('index'))
     return render_template('challenge.html', title='Challenge', challenger_form=challenger_form,
-                           challenged_form=challenged_form, graph=graph1_url)
+                           challenged_form=challenged_form, correlation_matrix=correlation_matrix)
 
 
 @app.route('/post/<challenged_id>', methods=['GET', 'POST'])
@@ -132,3 +135,11 @@ def post(challenged_id=None):
     return render_template('post.html', form=post_form)
 
 
+@app.route('/corr_matrix.png', methods=['GET', 'POST'])
+def corr_matrix_png():
+    return get_correlation_matrix(get_data_frame())
+
+
+@app.route('/confusion_matrix.png', methods=['GET', 'POST'])
+def confustion_matrix_png():
+    return get_confusion_matrix(get_data_frame())
