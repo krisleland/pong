@@ -1,5 +1,5 @@
-from flask import render_template, flash, redirect, url_for, request
-from app import app, db
+from flask import render_template, flash, redirect, url_for, request, Response
+from app import app, db, Figure, FigureCanvas
 from app.forms import LoginForm, RegistrationForm, ChallengeForm, MatchPostForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Match, Challenge
@@ -7,12 +7,12 @@ from werkzeug.urls import url_parse
 from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
 from app.route_helper import _resolve_challenge
 from app.aiml import _get_linear_regression_model
+import io
 
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
-    _get_linear_regression_model()
     players = User.query.order_by(User.elo.desc()).all()
     if current_user.is_authenticated:
         index = players.index(current_user)
@@ -129,4 +129,16 @@ def post(challenged_id=None):
         flash('Match successfully posted!')
         return redirect(url_for('index'))
     return render_template('post.html', form=post_form)
+
+
+@app.route('/confusion_matrix.png')
+def confustion_matrix_png():
+    fig = _get_linear_regression_model()
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+
+def create_figure():
+    fig = Figure()
 
