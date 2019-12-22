@@ -1,6 +1,6 @@
 from app import pd, np, sm, smf, plt, Figure, FigureCanvas
 from app.models import Match, User, Challenge
-import io
+import io, base64
 
 
 def _get_linear_regression_model():
@@ -58,7 +58,18 @@ def _get_linear_regression_model():
     model.summary()
     res.summary()
     res.pred_table()
-    plt.matshow(data_frame.corr())
+    plt.figure(figsize=(3,3))
+    plt.matshow(data_frame.corr(), fignum=1)
+    plt.xticks(range(data_frame.shape[1]), data_frame.columns, fontsize=6, rotation=70)
+    plt.yticks(range(data_frame.shape[1]), data_frame.columns, fontsize=8)
+    #cb = plt.colorbar()
+    #cb.ax.tick_params(labelsize=14)
+    #plt.title('Correlation Matrix', fontsize=10);
+    img = io.BytesIO()
+    plt.savefig(img, format='png', bbox_inches='tight')
+    img.seek(0)
+    graph_url = base64.b64encode(img.getvalue()).decode()
+    return 'data:image/png;base64,{}'.format(graph_url)
 
 
 

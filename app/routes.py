@@ -73,6 +73,7 @@ def register():
 
 @app.route('/challenge/<challenged_id>', methods=['GET', 'POST'])
 def challenge(challenged_id):
+    graph1_url = _get_linear_regression_model()
     if current_user.is_anonymous:
         return redirect(url_for('index'))
     challenged_user = User.query.get(challenged_id)
@@ -90,7 +91,7 @@ def challenge(challenged_id):
         flash('You have challenged {player}!'.format(player=challenged_user.name))
         return redirect(url_for('index'))
     return render_template('challenge.html', title='Challenge', challenger_form=challenger_form,
-                           challenged_form=challenged_form)
+                           challenged_form=challenged_form, graph=graph1_url)
 
 
 @app.route('/post/<challenged_id>', methods=['GET', 'POST'])
@@ -130,15 +131,4 @@ def post(challenged_id=None):
         return redirect(url_for('index'))
     return render_template('post.html', form=post_form)
 
-
-@app.route('/confusion_matrix.png')
-def confustion_matrix_png():
-    fig = _get_linear_regression_model()
-    output = io.BytesIO()
-    FigureCanvas(fig).print_png(output)
-    return Response(output.getvalue(), mimetype='image/png')
-
-
-def create_figure():
-    fig = Figure()
 
