@@ -6,11 +6,13 @@ from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
 from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
 from app.route_helper import _resolve_challenge
+from app.aiml import _get_linear_regression_model
 
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
+    _get_linear_regression_model()
     players = User.query.order_by(User.elo.desc()).all()
     if current_user.is_authenticated:
         index = players.index(current_user)
