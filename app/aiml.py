@@ -43,8 +43,18 @@ def get_correlation_matrix(data_frame):
 def get_confusion_matrix(data_frame):
     f = 'winner_player_one ~ resolved_challenge + challenger_won + left_hand + right_hand + paddle_hard + paddle_soft + elo + wins + losses'
     res = smf.logit(formula=str(f), data=data_frame).fit()
-    plt.figure(figsize=(3,3))
-    plt.matshow(res.pred_table(), fignum=3)
+    matrix = res.pred_table(threshold=0.5)
+    print(matrix)
+    fig, ax = plt.subplots()
+    ax.matshow(matrix, cmap='seismic')
+    x_headers = ('Guessed No', 'Guessed Yes')
+    y_headers = ('Actual No', 'Actual Yes')
+    ax.set_xticks(np.arange(matrix.shape[0]))
+    ax.set_yticks(np.arange(matrix.shape[1]))
+    ax.set_xticklabels(x_headers, rotation=45)
+    ax.set_yticklabels(y_headers)
+    for (i,j),z in np.ndenumerate(matrix):
+        ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
     img = io.BytesIO()
     plt.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
