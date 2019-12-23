@@ -6,7 +6,7 @@ from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
 from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
 from app.route_helper import _resolve_challenge
-from app.aiml import get_data_frame, get_confusion_matrix, get_correlation_matrix
+from app.aiml import get_data_frame, get_confusion_matrix, get_correlation_matrix, Aiml
 import io
 
 
@@ -137,9 +137,9 @@ def post(challenged_id=None):
 
 @app.route('/corr_matrix.png', methods=['GET', 'POST'])
 def corr_matrix_png():
-    return get_correlation_matrix(get_data_frame())
+    return get_correlation_matrix(Aiml().get_data_frame())
 
 
 @app.route('/confusion_matrix.png', methods=['GET', 'POST'])
 def confustion_matrix_png():
-    return get_confusion_matrix(get_data_frame())
+    return get_confusion_matrix(Aiml().get_data_frame())

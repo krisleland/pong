@@ -3,6 +3,21 @@ from app.models import Match, User, Challenge
 import io, base64
 
 
+class Aiml(object):
+    data_frame = None
+
+    def __init__(self):
+        if Aiml.data_frame is not None:
+            self.data_frame = Aiml.data_frame
+        else:
+            Aiml.data_frame = get_data_frame()
+            self.data_frame = Aiml.data_frame
+
+
+    def get_data_frame(self):
+        return self.data_frame
+
+
 def set_frame_data(data_frame):
     x_data = data_frame[['resolved_challenge', 'challenger_won', 'left_hand', 'right_hand',
                          'paddle_hard', 'paddle_soft', 'elo', 'wins', 'losses']]
@@ -28,13 +43,12 @@ def get_correlation_matrix(data_frame):
 def get_confusion_matrix(data_frame):
     f = 'winner_player_one ~ resolved_challenge + challenger_won + left_hand + right_hand + paddle_hard + paddle_soft + elo + wins + losses'
     res = smf.logit(formula=str(f), data=data_frame).fit()
-    plt.matshow(res.pred_table(), fignum=3)
     plt.figure(figsize=(3,3))
+    plt.matshow(res.pred_table(), fignum=3)
     img = io.BytesIO()
     plt.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
-    graph_url = base64.b64encode(img.getvalue()).decode()
-    return 'data:image/png;base64,{}'.format(graph_url)
+    return send_file(img, mimetype='image/png')
 
 
 def get_data_frame():
