@@ -5,6 +5,8 @@ import io, base64
 
 class Aiml(object):
     data_frame = None
+    linear_model = None
+    logistic_model = None
 
     def __init__(self):
         if Aiml.data_frame is not None:
@@ -12,53 +14,54 @@ class Aiml(object):
         else:
             Aiml.data_frame = get_data_frame()
             self.data_frame = Aiml.data_frame
+        self.linear_model = Aiml.linear_model
+        self.logistic_model = Aiml.logistic_model
+
 
 
     def get_data_frame(self):
         return self.data_frame
 
-
-def set_frame_data(data_frame):
-    x_data = data_frame[['resolved_challenge', 'challenger_won', 'left_hand', 'right_hand',
-                         'paddle_hard', 'paddle_soft', 'elo', 'wins', 'losses']]
-    y_data = data_frame.winner_player_one
-    model = sm.OLS(y_data, x_data).fit()
-
-
-def get_correlation_matrix(data_frame):
-    x_data = data_frame[['resolved_challenge', 'challenger_won', 'left_hand', 'right_hand',
-                         'paddle_hard', 'paddle_soft', 'elo', 'wins', 'losses']]
-    y_data = data_frame.winner_player_one
-    model = sm.OLS(y_data, x_data).fit()
-    plt.figure(figsize=(3,3))
-    plt.matshow(data_frame.corr(), fignum=1)
-    plt.xticks(range(data_frame.shape[1]), data_frame.columns, fontsize=6, rotation=70)
-    plt.yticks(range(data_frame.shape[1]), data_frame.columns, fontsize=8)
-    img = io.BytesIO()
-    plt.savefig(img, format='png', bbox_inches='tight')
-    img.seek(0)
-    return send_file(img, mimetype='image/png')
+    def get_correlation_matrix(self):
+        if self.linear_model is None:
+            x_data = self.data_frame[['resolved_challenge', 'challenger_won', 'left_hand', 'right_hand',
+                                 'paddle_hard', 'paddle_soft', 'elo', 'wins', 'losses']]
+            y_data = self.data_frame.winner_player_one
+            self.linear_model = sm.OLS(y_data, x_data).fit()
+            Aiml.linear_model = self.linear_model
+        fig, ax = plt.subplots(figsize=(3,3))
+        self.linear_model.predict()
+        ax.matshow(self.data_frame.corr())
+        ax.set_xticks(np.arange(self.data_frame.corr().shape[0]))
+        ax.set_yticks(np.arange(self.data_frame.corr().shape[1]))
+        ax.set_xticklabels(self.data_frame.corr().columns, fontsize=6, rotation=70)
+        ax.set_yticklabels(self.data_frame.corr().columns, fontsize=6)
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        return send_file(img, mimetype='image/png')
 
 
-def get_confusion_matrix(data_frame):
-    f = 'winner_player_one ~ resolved_challenge + challenger_won + left_hand + right_hand + paddle_hard + paddle_soft + elo + wins + losses'
-    res = smf.logit(formula=str(f), data=data_frame).fit()
-    matrix = res.pred_table(threshold=0.5)
-    print(matrix)
-    fig, ax = plt.subplots()
-    ax.matshow(matrix, cmap='seismic')
-    x_headers = ('Guessed No', 'Guessed Yes')
-    y_headers = ('Actual No', 'Actual Yes')
-    ax.set_xticks(np.arange(matrix.shape[0]))
-    ax.set_yticks(np.arange(matrix.shape[1]))
-    ax.set_xticklabels(x_headers, rotation=45)
-    ax.set_yticklabels(y_headers)
-    for (i,j),z in np.ndenumerate(matrix):
-        ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
-    img = io.BytesIO()
-    plt.savefig(img, format='png', bbox_inches='tight')
-    img.seek(0)
-    return send_file(img, mimetype='image/png')
+    def get_confusion_matrix(self):
+        if self.logistic_model is None:
+            f = 'winner_player_one ~ resolved_challenge + challenger_won + left_hand + right_hand + paddle_hard + paddle_soft + elo + wins + losses'
+            self.logistic_model = smf.logit(formula=str(f), data=self.data_frame).fit()
+            Aiml.logistic_model = self.logistic_model
+        matrix = self.logistic_model.pred_table(threshold=0.5)
+        fig, ax = plt.subplots(figsize=(3,3))
+        ax.matshow(matrix, cmap='seismic')
+        x_headers = ('Guessed No', 'Guessed Yes')
+        y_headers = ('Actual No', 'Actual Yes')
+        ax.set_xticks(np.arange(matrix.shape[0]))
+        ax.set_yticks(np.arange(matrix.shape[1]))
+        ax.set_xticklabels(x_headers, rotation=45)
+        ax.set_yticklabels(y_headers)
+        for (i,j),z in np.ndenumerate(matrix):
+            ax.text(j, i, '{:0.1f}'.format(z), ha='center', va='center')
+        img = io.BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        return send_file(img, mimetype='image/png')
 
 
 def get_data_frame():
