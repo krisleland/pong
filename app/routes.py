@@ -1,9 +1,10 @@
 from flask import render_template, flash, redirect, url_for, request, Response
 from app import app, db, Figure, FigureCanvas
-from app.forms import LoginForm, RegistrationForm, ChallengeForm, MatchPostForm
+from app.forms import LoginForm, RegistrationForm, ChallengerForm, ChallengedForm, MatchPostForm, WinPercentForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
+from werkzeug import FileWrapper
 from app.route_helper import _challenge_form_setter, _elo_calculator, _create_user, _get_unresolved_challenger_ids
 from app.route_helper import _resolve_challenge
 from app.aiml import Aiml
@@ -24,6 +25,7 @@ def index():
             high_index = len(players)
         challenge_players = players[low_index:high_index]
         unresolved_challengers = _get_unresolved_challenger_ids(current_user)
+        Aiml().get_logistic_model()
     else:
         challenge_players = []
         unresolved_challengers = []
@@ -76,21 +78,25 @@ def challenge(challenged_id):
     if current_user.is_anonymous:
         return redirect(url_for('index'))
     challenged_user = User.query.get(challenged_id)
-    challenger_form = ChallengeForm()
-    challenged_form = ChallengeForm()
+    percent_form = WinPercentForm()
+    challenger_form = ChallengerForm()
+    challenged_form = ChallengedForm()
     challenger_form = _challenge_form_setter(current_user, challenger_form)
     challenged_form = _challenge_form_setter(challenged_user, challenged_form)
-    challenged_form.submit.label.text = 'Challenge'
-    if challenged_form.validate_on_submit():
-        challenge = Challenge(challenger_id=current_user.id,
-                              challenged_id=challenged_user.id,
-                              resolved_match_id=None)
-        db.session.add(challenge)
-        db.session.commit()
-        flash('You have challenged {player}!'.format(player=challenged_user.name))
-        return redirect(url_for('index'))
+    if challenger_form.validate_on_submit():
+        if challenger_form.challenger_submit.data:
+            challenge = Challenge(challenger_id=current_user.id,
+                                  challenged_id=challenged_user.id,
+                                  resolved_match_id=None)
+            db.session.add(challenge)
+            db.session.commit()
+            flash('You have challenged {player}!'.format(player=challenged_user.name))
+            return redirect(url_for('index'))
+        else:
+            percent = Aiml().calculate_win_percent(challenger_form, challenged_form)
+            percent_form.descriptive_percent.data = percent
     return render_template('challenge.html', title='Challenge', challenger_form=challenger_form,
-                           challenged_form=challenged_form)
+                           challenged_form=challenged_form, percent_form=percent_form)
 
 
 @app.route('/post/<challenged_id>', methods=['GET', 'POST'])
@@ -133,9 +139,14 @@ def post(challenged_id=None):
 
 @app.route('/corr_matrix.png', methods=['GET', 'POST'])
 def corr_matrix_png():
-    return Aiml().get_correlation_matrix()
+    matrix = Aiml().get_correlation_matrix()
+    w = FileWrapper(matrix)
+    return Response(w, mimetype='img/png', direct_passthrough=True)
 
 
 @app.route('/confusion_matrix.png', methods=['GET', 'POST'])
-def confustion_matrix_png():
-    return Aiml().get_confusion_matrix()
+def confusion_matrix_png():
+    matrix = Aiml().get_confusion_matrix()
+    w = FileWrapper(matrix)
+    return Response(w, mimetype='img/png', direct_passthrough=True)
+

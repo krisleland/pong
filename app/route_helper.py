@@ -1,27 +1,46 @@
 from app import app
 from app.models import User
-from app.forms import ChallengeForm
+from app.forms import ChallengerForm, ChallengedForm
 from app.models import User, Match, Challenge
 
 
 def _challenge_form_setter(user, form):
-    form.name.data = user.name
-    form.name.render_kw = {'disabled': 'disabled'}
-    if user.is_lefty == 1 and user.is_righty == 1:
-        form.handedness.data = 'ambidextrous'
-    elif user.is_lefty == 1:
-        form.handedness.data = 'left'
+    if isinstance(form, ChallengerForm):
+        form.challenger_name.data = user.name
+        form.challenger_name.render_kw = {'disabled': 'disabled'}
+        if user.is_lefty == 1 and user.is_righty == 1:
+            form.challenger_handedness.data = 'ambidextrous'
+        elif user.is_lefty == 1:
+            form.challenger_handedness.data = 'left'
+        else:
+            form.challenger_handedness.data = 'right'
+        if user.is_paddle_hard == 1 and user.is_paddle_soft == 1:
+            form.challenger_paddle.data = 'both'
+        elif user.is_paddle_soft == 1:
+            form.challenger_paddle.data = 'soft'
+        else:
+            form.challenger_paddle.data = 'hard'
+        form.challenger_elo.data = user.elo
+        form.challenger_wins.data = user.wins
+        form.challenger_losses.data = user.losses
     else:
-        form.handedness.data = 'right'
-    if user.is_paddle_hard == 1 and user.is_paddle_soft == 1:
-        form.paddle.data = 'both'
-    elif user.is_paddle_soft == 1:
-        form.paddle.data = 'soft'
-    else:
-        form.paddle.data = 'hard'
-    form.elo.data = user.elo
-    form.wins.data = user.wins
-    form.losses.data = user.losses
+        form.challenged_name.data = user.name
+        form.challenged_name.render_kw = {'disabled': 'disabled'}
+        if user.is_lefty == 1 and user.is_righty == 1:
+            form.challenged_handedness.data = 'ambidextrous'
+        elif user.is_lefty == 1:
+            form.challenged_handedness.data = 'left'
+        else:
+            form.challenged_handedness.data = 'right'
+        if user.is_paddle_hard == 1 and user.is_paddle_soft == 1:
+            form.challenged_paddle.data = 'both'
+        elif user.is_paddle_soft == 1:
+            form.challenged_paddle.data = 'soft'
+        else:
+            form.challenged_paddle.data = 'hard'
+        form.challenged_elo.data = user.elo
+        form.challenged_wins.data = user.wins
+        form.challenged_losses.data = user.losses
     return form
 
 

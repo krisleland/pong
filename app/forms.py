@@ -32,17 +32,32 @@ class RegistrationForm(FlaskForm):
             raise ValidationError('Please use a different email address.')
 
 
-class ChallengeForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    handedness = SelectField(u'Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
-    paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
-    elo = DecimalField('Elo', validators=[DataRequired()])
-    wins = IntegerField('Wins')
-    losses = IntegerField('Losses')
-    submit = SubmitField('')
+class ChallengerForm(FlaskForm):
+    challenger_name = StringField(u'Name', validators=[DataRequired()])
+    challenger_handedness = SelectField(u'Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
+    challenger_paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
+    challenger_elo = DecimalField(u'Elo', validators=[DataRequired()])
+    challenger_wins = IntegerField(u'Wins')
+    challenger_losses = IntegerField(u'Losses')
+    challenger_submit = SubmitField('Challenge')
+
+
+class ChallengedForm(FlaskForm):
+    challenged_name = StringField(u'Name', validators=[DataRequired()])
+    challenged_handedness = SelectField(u'Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
+    challenged_paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
+    challenged_elo = DecimalField(u'Elo', validators=[DataRequired()])
+    challenged_wins = IntegerField(u'Wins')
+    challenged_losses = IntegerField(u'Losses')
+    challenged_calculate = SubmitField('Calculate Odds')
 
 
 class MatchPostForm(FlaskForm):
     challenger = SelectField(u'Challenger', choices=[])
     win_or_lose = SelectField(u'Result', choices=[('win', 'Win'), ('lose', 'Lose')])
-    submit = SubmitField('Post Match')
+    submit = SubmitField(u'Post Match')
+
+
+class WinPercentForm(FlaskForm):
+    descriptive_percent = StringField(u'Descriptive (Linear) Calculated Chance to Win: ')
+    non_descriptive_percent = StringField(u'Non-Descriptive (Logistic) Calculated Chance to Win: ')

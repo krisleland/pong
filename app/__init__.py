@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 from flask import Flask, Response, send_file
 from config import Config
 from flask_sqlalchemy import SQLAlchemy

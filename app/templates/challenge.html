@@ -11,10 +11,11 @@
             {{ wtf.quick_form(challenged_form) }}
         </div>
         <div class="col-md-4">
+            {{ wtf.quick_form(percent_form) }}
             <h4>Correlation Matrix</h4>
-            <img src="/corr_matrix.png" alt="my plots">
+            <img src="{{ url_for('corr_matrix_png') }}" alt="Correlation Matrix">
             <h4>Confusion Matrix</h4>
-            <img src="/confusion_matrix.png" alt="my plot">
+            <img src="{{ url_for('confusion_matrix_png') }}" alt="Confusion Matrix">
         </div>
     </div>
     <div class="row">
