@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request, Response
 from app import app, db, Figure, FigureCanvas
-from app.forms import LoginForm, RegistrationForm, ChallengerForm, ChallengedForm, MatchPostForm, WinPercentForm
+from app.forms import LoginForm, RegistrationForm, ChallengeForm, MatchPostForm
 from flask_login import current_user, login_user, logout_user
 from app.models import User, Match, Challenge
 from werkzeug.urls import url_parse
@@ -78,11 +78,13 @@ def challenge(challenged_id):
     if current_user.is_anonymous:
         return redirect(url_for('index'))
     challenged_user = User.query.get(challenged_id)
-    percent_form = WinPercentForm()
-    challenger_form = ChallengerForm()
-    challenged_form = ChallengedForm()
-    challenger_form = _challenge_form_setter(current_user, challenger_form)
-    challenged_form = _challenge_form_setter(challenged_user, challenged_form)
+    challenger_user = User.query.get(current_user.id)
+    form = ChallengeForm()
+    if form.validate_on_submit():
+        print("HEY")
+    if request.method == 'GET':
+        _challenge_form_setter(challenger_user, challenged_user, form)
+        return render_template('challenge.html', title='Challenge', form=form)
     if challenger_form.validate_on_submit():
         if challenger_form.challenger_submit.data:
             challenge = Challenge(challenger_id=current_user.id,
@@ -92,9 +94,6 @@ def challenge(challenged_id):
             db.session.commit()
             flash('You have challenged {player}!'.format(player=challenged_user.name))
             return redirect(url_for('index'))
-        else:
-            percent = Aiml().calculate_win_percent(challenger_form, challenged_form)
-            percent_form.descriptive_percent.data = percent
     return render_template('challenge.html', title='Challenge', challenger_form=challenger_form,
                            challenged_form=challenged_form, percent_form=percent_form)
 
@@ -104,7 +103,6 @@ def challenge(challenged_id):
 def post(challenged_id=None):
     if current_user.is_anonymous:
         return redirect(url_for('index'))
-    print(challenged_id is None)
     players = User.query.order_by(User.name)
     post_form = MatchPostForm()
     for player in players:

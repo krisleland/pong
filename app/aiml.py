@@ -1,7 +1,7 @@
 from app import pd, np, sm, smf, plt, Figure, FigureCanvas, send_file
 from app.models import Match, User, Challenge
 import io, base64
-from app.forms import ChallengerForm, ChallengedForm
+from app.forms import ChallengeForm
 
 
 class Aiml(object):
@@ -133,7 +133,7 @@ class Aiml(object):
         Aiml.data_frame = data_frame
         return data_frame
 
-    def calculate_win_percent(self, form_player_one, form_player_two):
+    def calculate_win_percent(self, challenger_form, challenged_form):
         match_data = {'player_one_challenger': [],
                       'player_two_challenger': [],
                       'player_one_left_hand': [],
@@ -147,8 +147,8 @@ class Aiml(object):
                       'elo': [],
                       'wins': [],
                       'losses': []}
-        player_one = User.query.filter_by(name=form_player_one.name.data).first()
-        player_two = User.query.filter_by(name=form_player_two.name.data).first()
+        player_one = User.query.filter_by(name=challenger_form.challenger_name.data).first()
+        player_two = User.query.filter_by(name=challenged_form.challenged_name.data).first()
         if Challenge.query.filter_by(challenger_id=player_one.id, challenged_id=player_two.id,
                                      resolved_match_id=None).first() is not None:
             match_data['player_one_challenger'].append(1)
@@ -160,40 +160,40 @@ class Aiml(object):
         else:
             match_data['player_one_challenger'].append(0)
             match_data['player_two_challenger'].append(0)
-        if form_player_one.handedness.data == 'left' or form_player_one.handedness.data == 'ambidextrous':
+        if challenger_form.challenger_handedness.data == 'left' or challenger_form.challenger_handedness.data == 'ambidextrous':
             match_data['player_one_left_hand'].append(1)
         else:
             match_data['player_one_left_hand'].append(0)
-        if form_player_one.handedness.data == 'right' or form_player_one.handedness.data == 'ambidextrous':
+        if challenger_form.challenger_handedness.data == 'right' or challenger_form.challenger_handedness.data == 'ambidextrous':
             match_data['player_one_right_hand'].append(1)
         else:
             match_data['player_one_right_hand'].append(0)
-        if form_player_two.handedness.data == 'left' or form_player_two.handedness.data == 'ambidextrous':
+        if challenged_form.challenged_handedness.data == 'left' or challenged_form.challenged_handedness.data == 'ambidextrous':
             match_data['player_two_left_hand'].append(1)
         else:
             match_data['player_two_left_hand'].append(0)
-        if form_player_two.handedness.data == 'right' or form_player_one.handedness.data == 'ambidextrous':
+        if challenged_form.challenged_handedness.data == 'right' or challenged_form.challenged_handedness.data == 'ambidextrous':
             match_data['player_two_right_hand'].append(1)
         else:
             match_data['player_two_right_hand'].append(0)
-        if form_player_one.paddle.data == 'hard' or form_player_one.paddle.data == 'both':
+        if challenger_form.challenger_paddle.data == 'hard' or challenger_form.challenger_paddle.data == 'both':
             match_data['player_one_paddle_hard'].append(1)
         else:
             match_data['player_one_paddle_hard'].append(0)
-        if form_player_one.paddle.data == 'soft' or form_player_one.paddle.data == 'both':
+        if challenger_form.challenger_paddle.data == 'soft' or challenger_form.challenger_paddle.data == 'both':
             match_data['player_one_paddle_soft'].append(1)
         else:
             match_data['player_one_paddle_soft'].append(0)
-        if form_player_two.paddle.data == 'hard' or form_player_two.paddle.data == 'both':
+        if challenged_form.challenged_paddle.data == 'hard' or challenged_form.challenged_paddle.data == 'both':
             match_data['player_two_paddle_hard'].append(1)
         else:
             match_data['player_two_paddle_hard'].append(0)
-        if form_player_two.paddle.data == 'soft' or form_player_two.paddle.data == 'both':
+        if challenged_form.challenged_paddle.data == 'soft' or challenged_form.challenged_paddle.data == 'both':
             match_data['player_two_paddle_soft'].append(1)
         else:
             match_data['player_two_paddle_soft'].append(0)
-        match_data['elo'] = form_player_one.elo.data - form_player_two.elo.data
-        match_data['wins'] = form_player_one.wins.data - form_player_two.wins.data
-        match_data['losses'] = form_player_one.losses.data - form_player_two.losses.data
+        match_data['elo'] = challenger_form.challenger_elo.data - challenged_form.challenged_elo.data
+        match_data['wins'] = challenger_form.challenger_wins.data - challenged_form.challenged_wins.data
+        match_data['losses'] = challenger_form.challenger_losses.data - challenged_form.challenged_losses.data
         df = pd.DataFrame(match_data)
         return self.linear_model.predict(df)
