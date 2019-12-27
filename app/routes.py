@@ -75,6 +75,8 @@ def register():
 
 @app.route('/challenge/<challenged_id>', methods=['GET', 'POST'])
 def challenge(challenged_id):
+    flash('Changes to user data are permanent.  Edit stats and click "Calculate Odds" to '
+          'get a new calculated chance to win.  Models are trained between logins.')
     if current_user.is_anonymous:
         return redirect(url_for('index'))
     challenged_user = User.query.get(challenged_id)
@@ -82,14 +84,16 @@ def challenge(challenged_id):
     form = ChallengeForm()
 
     if form.challenge_submit.data:
-        if form.challenge_submit.data:
-            challenge = Challenge(challenger_id=current_user.id,
-                                  challenged_id=challenged_user.id,
-                                  resolved_match_id=None)
-            db.session.add(challenge)
-            db.session.commit()
-            flash('You have challenged {player}!'.format(player=challenged_user.name))
-            return redirect(url_for('index'))
+        challenge = Challenge(challenger_id=current_user.id,
+                              challenged_id=challenged_user.id,
+                              resolved_match_id=None)
+        db.session.add(challenge)
+        db.session.commit()
+        flash('You have challenged {player}!'.format(player=challenged_user.name))
+        return redirect(url_for('index'))
+    elif form.challenge_calculate.data:
+        challenger_user.elo = float(form.challenger_elo.data)
+        print(form.challenger_elo.data)
     _challenge_form_setter(challenger_user, challenged_user, form)
     form.descriptive_percent.data, form.descriptive_accuracy.data, form.non_descriptive_percent.data, \
         form.non_descriptive_accuracy.data = Aiml().calculate_win_percent(challenger_user, challenged_user)
