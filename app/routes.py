@@ -80,13 +80,9 @@ def challenge(challenged_id):
     challenged_user = User.query.get(challenged_id)
     challenger_user = User.query.get(current_user.id)
     form = ChallengeForm()
-    if form.validate_on_submit():
-        print("HEY")
-    if request.method == 'GET':
-        _challenge_form_setter(challenger_user, challenged_user, form)
-        return render_template('challenge.html', title='Challenge', form=form)
-    if challenger_form.validate_on_submit():
-        if challenger_form.challenger_submit.data:
+
+    if form.challenge_submit.data:
+        if form.challenge_submit.data:
             challenge = Challenge(challenger_id=current_user.id,
                                   challenged_id=challenged_user.id,
                                   resolved_match_id=None)
@@ -94,8 +90,10 @@ def challenge(challenged_id):
             db.session.commit()
             flash('You have challenged {player}!'.format(player=challenged_user.name))
             return redirect(url_for('index'))
-    return render_template('challenge.html', title='Challenge', challenger_form=challenger_form,
-                           challenged_form=challenged_form, percent_form=percent_form)
+    _challenge_form_setter(challenger_user, challenged_user, form)
+    form.descriptive_percent.data, form.descriptive_accuracy.data, form.non_descriptive_percent.data, \
+        form.non_descriptive_accuracy.data = Aiml().calculate_win_percent(challenger_user, challenged_user)
+    return render_template('challenge.html', title='Challenge', form=form)
 
 
 @app.route('/post/<challenged_id>', methods=['GET', 'POST'])

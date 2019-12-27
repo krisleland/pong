@@ -3,6 +3,7 @@
 
 {% block app_content %}
     <h1>Challenge</h1>
+    <form action="" method="post" novalidate>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.form_field(form.challenger_name) }}
@@ -11,6 +12,7 @@
             {{ wtf.form_field(form.challenger_elo) }}
             {{ wtf.form_field(form.challenger_wins) }}
             {{ wtf.form_field(form.challenger_losses) }}
+            {{ wtf.form_field(form.challenge_submit)  }}
         </div>
         <div class="col-md-4">
             {{ wtf.form_field(form.challenged_name) }}
@@ -21,6 +23,10 @@
             {{ wtf.form_field(form.challenged_losses) }}
         </div>
         <div class="col-md-4">
+            {{ wtf.form_field(form.descriptive_percent) }}
+            {{ wtf.form_field(form.descriptive_accuracy) }}
+            {{ wtf.form_field(form.non_descriptive_percent) }}
+            {{ wtf.form_field(form.non_descriptive_accuracy) }}
             <h4>Correlation Matrix</h4>
             <img src="{{ url_for('corr_matrix_png') }}" alt="Correlation Matrix">
             <h4>Confusion Matrix</h4>
@@ -31,4 +37,5 @@
         <div class="col-md-2">
         </div>
     </div>
+    </form>
 {% endblock %}

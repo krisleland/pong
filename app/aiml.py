@@ -133,7 +133,7 @@ class Aiml(object):
         Aiml.data_frame = data_frame
         return data_frame
 
-    def calculate_win_percent(self, challenger_form, challenged_form):
+    def calculate_win_percent(self, player_one, player_two):
         match_data = {'player_one_challenger': [],
                       'player_two_challenger': [],
                       'player_one_left_hand': [],
@@ -147,8 +147,6 @@ class Aiml(object):
                       'elo': [],
                       'wins': [],
                       'losses': []}
-        player_one = User.query.filter_by(name=challenger_form.challenger_name.data).first()
-        player_two = User.query.filter_by(name=challenged_form.challenged_name.data).first()
         if Challenge.query.filter_by(challenger_id=player_one.id, challenged_id=player_two.id,
                                      resolved_match_id=None).first() is not None:
             match_data['player_one_challenger'].append(1)
@@ -160,40 +158,44 @@ class Aiml(object):
         else:
             match_data['player_one_challenger'].append(0)
             match_data['player_two_challenger'].append(0)
-        if challenger_form.challenger_handedness.data == 'left' or challenger_form.challenger_handedness.data == 'ambidextrous':
+        if player_one.is_lefty == 1:
             match_data['player_one_left_hand'].append(1)
         else:
             match_data['player_one_left_hand'].append(0)
-        if challenger_form.challenger_handedness.data == 'right' or challenger_form.challenger_handedness.data == 'ambidextrous':
+        if player_one.is_righty == 1:
             match_data['player_one_right_hand'].append(1)
         else:
             match_data['player_one_right_hand'].append(0)
-        if challenged_form.challenged_handedness.data == 'left' or challenged_form.challenged_handedness.data == 'ambidextrous':
+        if player_two.is_lefty == 1:
             match_data['player_two_left_hand'].append(1)
         else:
             match_data['player_two_left_hand'].append(0)
-        if challenged_form.challenged_handedness.data == 'right' or challenged_form.challenged_handedness.data == 'ambidextrous':
+        if player_two.is_righty == 1:
             match_data['player_two_right_hand'].append(1)
         else:
             match_data['player_two_right_hand'].append(0)
-        if challenger_form.challenger_paddle.data == 'hard' or challenger_form.challenger_paddle.data == 'both':
+        if player_one.is_paddle_hard == 1:
             match_data['player_one_paddle_hard'].append(1)
         else:
             match_data['player_one_paddle_hard'].append(0)
-        if challenger_form.challenger_paddle.data == 'soft' or challenger_form.challenger_paddle.data == 'both':
+        if player_one.is_paddle_soft == 1:
             match_data['player_one_paddle_soft'].append(1)
         else:
             match_data['player_one_paddle_soft'].append(0)
-        if challenged_form.challenged_paddle.data == 'hard' or challenged_form.challenged_paddle.data == 'both':
+        if player_two.is_paddle_hard == 1:
             match_data['player_two_paddle_hard'].append(1)
         else:
             match_data['player_two_paddle_hard'].append(0)
-        if challenged_form.challenged_paddle.data == 'soft' or challenged_form.challenged_paddle.data == 'both':
+        if player_two.is_paddle_soft == 1:
             match_data['player_two_paddle_soft'].append(1)
         else:
             match_data['player_two_paddle_soft'].append(0)
-        match_data['elo'] = challenger_form.challenger_elo.data - challenged_form.challenged_elo.data
-        match_data['wins'] = challenger_form.challenger_wins.data - challenged_form.challenged_wins.data
-        match_data['losses'] = challenger_form.challenger_losses.data - challenged_form.challenged_losses.data
+        match_data['elo'] = player_one.elo - player_two.elo
+        match_data['wins'] = player_one.wins - player_two.wins
+        match_data['losses'] = player_one.losses - player_two.losses
         df = pd.DataFrame(match_data)
-        return self.linear_model.predict(df)
+        linear_percent = self.linear_model.predict(df).tolist()[0]
+        logistic_percent = self.logistic_model.predict(df).tolist()[0]
+        print(self.logistic_model.prsquared)
+        return (linear_percent, self.linear_model.rsquared,
+                logistic_percent, self.logistic_model.prsquared)

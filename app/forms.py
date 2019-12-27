@@ -39,7 +39,7 @@ class ChallengeForm(FlaskForm):
     challenger_elo = DecimalField('Elo')
     challenger_wins = IntegerField('Wins')
     challenger_losses = IntegerField('Losses')
-    challenger_submit = SubmitField('Challenge')
+    challenge_submit = SubmitField('Challenge')
     challenged_name = StringField('Name')
     challenged_handedness = SelectField('Dominate Hand', choices=[('left', 'Left'), ('right', 'Right'), ('ambidextrous', 'Ambidextrous')])
     challenged_paddle = SelectField(u'Paddle Type', choices=[('hard', 'Hard'), ('soft', 'Soft'), ('both', 'Both')])
@@ -48,7 +48,9 @@ class ChallengeForm(FlaskForm):
     challenged_losses = IntegerField('Losses')
     challenged_calculate = SubmitField('Calculate Odds')
     descriptive_percent = StringField(u'Descriptive (Linear) Calculated Chance to Win: ')
+    descriptive_accuracy = StringField(u'Descriptive (Linear) Accuracy (r-squared) Value: ')
     non_descriptive_percent = StringField(u'Non-Descriptive (Logistic) Calculated Chance to Win: ')
+    non_descriptive_accuracy = StringField(u'Non-Descriptive (Logistic) Accuracy (r-squared) Value: ')
 
 
 class MatchPostForm(FlaskForm):
