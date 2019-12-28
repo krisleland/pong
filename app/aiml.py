@@ -1,4 +1,5 @@
-from app import pd, np, sm, smf, plt, Figure, FigureCanvas, send_file
+from app import pd, np, sm, smf, plt, Figure, FigureCanvas, send_file, LinearRegression, train_test_split
+from app import KNeighborsClassifier, accuracy_score, KMeans, MLPClassifier
 from app.models import Match, User, Challenge
 import io, base64
 from app.forms import ChallengeForm
@@ -13,6 +14,7 @@ class Aiml(object):
         self.data_frame = self.build_data_frame() if Aiml.data_frame is None else Aiml.data_frame
         self.linear_model = self.build_linear_model() if Aiml.linear_model is None else Aiml.linear_model
         self.logistic_model = self.build_logistic_model() if Aiml.logistic_model is None else Aiml.logistic_model
+        self.x_train, self.x_test, self.y_train, self.y_test = self.build_training_data()
 
     def get_data_frame(self):
         return self.data_frame
@@ -68,9 +70,46 @@ class Aiml(object):
              'player_two_left_hand', 'player_two_right_hand', 'player_one_paddle_hard', 'player_one_paddle_soft',
              'player_two_paddle_hard', 'player_two_paddle_soft', 'elo', 'wins', 'losses']]
         y_data = self.data_frame.winner_player_one
+        x_train, x_test, y_train, y_test = train_test_split(
+            x_data, y_data, test_size=0.33, random_state=42)
+        neigh = KNeighborsClassifier(n_neighbors=3)
+        neigh.fit(x_train, y_train)
+        pred = neigh.predict(x_test)
+        print("KNeighbors accuracy score : ", accuracy_score(y_test, pred))
+        reg = LinearRegression().fit(x_train, y_train)
+        linear_pred = reg.predict(x_test)
+        linear_result = []
+        for item in linear_pred:
+            if item >= 0.5:
+                linear_result.append(1)
+            else:
+                linear_result.append(0)
+        clf = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(25, 10, 5, 2), random_state=1, max_iter=100000)
+        clf.fit(x_train, y_train)
+        neural_pred = clf.predict(x_test)
+        print("Neural Model accuracy score : ", accuracy_score(y_test, neural_pred))
+        print("Linear Model Accuracy score : ", accuracy_score(y_test, linear_result))
+
         linear_model = sm.OLS(y_data, x_data).fit()
         Aiml.linear_model = linear_model
         return linear_model
+
+
+    def build_k_means_cluster(self):
+        kmeans = KMeans(n_clusters=2, random_state=0)
+        kmeans.fit(x)
+
+
+    def build_training_data(self):
+        x_data = self.data_frame[
+            ['player_one_challenger', 'player_two_challenger', 'player_one_left_hand', 'player_one_right_hand',
+             'player_two_left_hand', 'player_two_right_hand', 'player_one_paddle_hard', 'player_one_paddle_soft',
+             'player_two_paddle_hard', 'player_two_paddle_soft', 'elo', 'wins', 'losses']]
+        y_data = self.data_frame.winner_player_one
+        x_train, x_test, y_train, y_test = train_test_split(
+            x_data, y_data, test_size=0.33, random_state=42)
+        return x_train, x_test, y_train, y_test
+
 
     def build_data_frame(self):
         matches = Match.query.all()
@@ -131,6 +170,7 @@ class Aiml(object):
                                                                                                 - player_two.losses if player_two.losses is not None else 0)
         data_frame = pd.DataFrame(match_data)
         Aiml.data_frame = data_frame
+        print(data_frame.dtypes)
         return data_frame
 
     def calculate_win_percent(self, player_one, player_two):
@@ -196,6 +236,5 @@ class Aiml(object):
         df = pd.DataFrame(match_data)
         linear_percent = self.linear_model.predict(df).tolist()[0]
         logistic_percent = self.logistic_model.predict(df).tolist()[0]
-        print(self.logistic_model.prsquared)
         return (linear_percent, self.linear_model.rsquared,
                 logistic_percent, self.logistic_model.prsquared)

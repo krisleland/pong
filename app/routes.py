@@ -75,8 +75,6 @@ def register():
 
 @app.route('/challenge/<challenged_id>', methods=['GET', 'POST'])
 def challenge(challenged_id):
-    flash('Changes to user data are permanent.  Edit stats and click "Calculate Odds" to '
-          'get a new calculated chance to win.  Models are trained between logins.')
     if current_user.is_anonymous:
         return redirect(url_for('index'))
     challenged_user = User.query.get(challenged_id)
@@ -92,11 +90,57 @@ def challenge(challenged_id):
         flash('You have challenged {player}!'.format(player=challenged_user.name))
         return redirect(url_for('index'))
     elif form.challenge_calculate.data:
+        print(form.challenger_elo.data, form.challenged_elo.data)
+        if form.challenger_handedness.data == 'ambidextrous':
+            challenger_user.is_lefty = 1
+            challenger_user.is_righty = 1
+        elif form.challenger_handedness.data == 'left':
+            challenger_user.is_lefty = 1
+            challenger_user.is_righty = 0
+        else:
+            challenger_user.is_lefty = 0
+            challenger_user.is_righty = 1
+        if form.challenged_handedness.data == 'ambidextrous':
+            challenged_user.is_lefty = 1
+            challenged_user.is_righty = 1
+        elif form.challenged_handedness.data == 'left':
+            challenged_user.is_lefty = 1
+            challenged_user.is_righty = 0
+        else:
+            challenged_user.is_lefty = 0
+            challenged_user.is_righty = 1
+        if form.challenger_paddle.data == 'both':
+            challenger_user.is_paddle_hard = 1
+            challenger_user.is_paddle_soft = 1
+        elif form.challenger_paddle.data == 'soft':
+            challenger_user.is_paddle_soft = 1
+            challenger_user.is_paddle_hard = 0
+        else:
+            challenger_user.is_paddle_hard = 1
+            challenger_user.is_paddle_soft = 0
+        if form.challenged_paddle.data == 'both':
+            challenged_user.is_paddle_hard = 1
+            challenged_user.is_paddle_soft = 1
+        elif form.challenged_paddle.data == 'soft':
+            challenged_user.is_paddle_soft = 1
+            challenged_user.is_paddle_hard = 0
+        else:
+            challenged_user.is_paddle_hard = 1
+            challenged_user.is_paddle_soft = 0
         challenger_user.elo = float(form.challenger_elo.data)
-        print(form.challenger_elo.data)
+        challenged_user.elo = float(form.challenged_elo.data)
+        challenger_user.wins = int(form.challenger_wins.data)
+        challenged_user.wins = int(form.challenged_wins.data)
+        challenger_user.losses = int(form.challenger_losses.data)
+        challenged_user.losses = int(form.challenged_losses.data)
+        print(form.challenger_elo.data, challenger_user.elo)
+        db.session.commit()
+        return redirect(url_for('challenge', challenged_id=challenged_user.id))
     _challenge_form_setter(challenger_user, challenged_user, form)
     form.descriptive_percent.data, form.descriptive_accuracy.data, form.non_descriptive_percent.data, \
         form.non_descriptive_accuracy.data = Aiml().calculate_win_percent(challenger_user, challenged_user)
+    flash('Changes to user data are permanent.  Edit stats and click "Calculate Odds" to '
+          'get a new calculated chance to win.  Models are trained between logins.')
     return render_template('challenge.html', title='Challenge', form=form)
 
 

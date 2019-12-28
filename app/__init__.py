@@ -14,6 +14,12 @@ import statsmodels.formula.api as smf
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.cluster import KMeans
+from sklearn.neural_network import MLPClassifier
 import io
 
 
