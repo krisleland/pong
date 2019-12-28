@@ -90,7 +90,6 @@ def challenge(challenged_id):
         flash('You have challenged {player}!'.format(player=challenged_user.name))
         return redirect(url_for('index'))
     elif form.challenge_calculate.data:
-        print(form.challenger_elo.data, form.challenged_elo.data)
         if form.challenger_handedness.data == 'ambidextrous':
             challenger_user.is_lefty = 1
             challenger_user.is_righty = 1
