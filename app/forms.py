@@ -47,10 +47,10 @@ class ChallengeForm(FlaskForm):
     challenged_wins = IntegerField('Wins')
     challenged_losses = IntegerField('Losses')
     challenge_calculate = SubmitField('Calculate Odds')
-    descriptive_percent = StringField(u'Descriptive (Linear) Calculated Chance to Win: ')
-    descriptive_accuracy = StringField(u'Descriptive (Linear) Accuracy (r-squared) Value: ')
-    non_descriptive_percent = StringField(u'Non-Descriptive (Logistic) Calculated Chance to Win: ')
-    non_descriptive_accuracy = StringField(u'Non-Descriptive (Logistic) Accuracy (r-squared) Value: ')
+    descriptive_percent = StringField(u'Descriptive (logistic) prediction: ')
+    descriptive_accuracy = StringField(u'Descriptive accuracy on test set: ')
+    non_descriptive_percent = StringField(u'Non-Descriptive (neural-network) prediction: ')
+    non_descriptive_accuracy = StringField(u'Non-Descriptive accuracy: ')
 
 
 class MatchPostForm(FlaskForm):

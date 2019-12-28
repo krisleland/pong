@@ -17,11 +17,27 @@ class Aiml(object):
     def __init__(self):
         self.data_frame = self.build_data_frame()
         self.x_train, self.x_test, self.y_train, self.y_test = self.build_training_data()
-        self.logistic_model = self.build_logistic_model()
-        self.neural_model = self.build_neural_model()
+        self.logistic_model = self.build_logistic_model() if Aiml.logistic_model is None else Aiml.logistic_model
+        self.neural_model = self.build_neural_model() if Aiml.neural_model is None else Aiml.neural_model
 
     def get_data_frame(self):
         return self.data_frame
+
+    def get_coef_graph(self):
+        labels = self.data_frame.columns[1:]
+        coefficients = self.logistic_model.coef_[0]
+        width = 0.5
+        fig, ax = plt.subplots(num=3, figsize=(3, 3), clear=True)
+        locations = np.arange(len(labels))
+        ax.bar(locations, coefficients, width)
+        ax.set_xticks(np.arange(labels.shape[0]))
+        ax.set_ylim([-.5, 1])
+        ax.set_xticklabels(labels, fontsize=6, rotation=90)
+        ax.set_ylabel('Coefficients')
+        img = io.BytesIO()
+        fig.savefig(img, format='png', bbox_inches='tight')
+        img.seek(0)
+        return img
 
     def get_correlation_matrix(self):
         fig, ax = plt.subplots(num=2, figsize=(3, 3), clear=True)
@@ -57,16 +73,16 @@ class Aiml(object):
 
     def build_logistic_model(self):
         log = LogisticRegression().fit(self.x_train, self.y_train)
+        Aiml.logistic_model = log
         log_pred = log.predict(self.x_test)
-        print("Logistic Model accuracy score : ", accuracy_score(self.y_test, log_pred))
         return log
 
     def build_neural_model(self):
         neural_model = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(10, 2), random_state=1,
-                            max_iter=10000000000000)
+                            max_iter=100000000000000000)
         neural_model.fit(self.x_train, self.y_train)
+        Aiml.neural_model = neural_model
         neural_pred = neural_model.predict(self.x_test)
-        print("Neural Model accuracy score : ", accuracy_score(self.y_test, neural_pred))
         return neural_model
 
     def build_training_data(self):

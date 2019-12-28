@@ -28,6 +28,8 @@
             {{ wtf.form_field(form.descriptive_accuracy) }}
             {{ wtf.form_field(form.non_descriptive_percent) }}
             {{ wtf.form_field(form.non_descriptive_accuracy) }}
+            <h4>Logistic Coefficient Graph</h4>
+            <img src="{{ url_for('coef_graph_png') }}" alt="Coefficient Graph"
             <h4>Correlation Matrix</h4>
             <img src="{{ url_for('corr_matrix_png') }}" alt="Correlation Matrix">
             <h4>Confusion Matrix</h4>

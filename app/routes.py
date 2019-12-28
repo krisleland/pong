@@ -132,14 +132,13 @@ def challenge(challenged_id):
         challenged_user.wins = int(form.challenged_wins.data)
         challenger_user.losses = int(form.challenger_losses.data)
         challenged_user.losses = int(form.challenged_losses.data)
-        print(form.challenger_elo.data, challenger_user.elo)
         db.session.commit()
         return redirect(url_for('challenge', challenged_id=challenged_user.id))
     _challenge_form_setter(challenger_user, challenged_user, form)
     form.descriptive_percent.data, form.descriptive_accuracy.data, form.non_descriptive_percent.data, \
         form.non_descriptive_accuracy.data = Aiml().calculate_win_percent(challenger_user, challenged_user)
     flash('Changes to user data are permanent.  Edit stats and click "Calculate Odds" to '
-          'get a new calculated chance to win.  Models are trained between logins.')
+          'get a new calculated chance to win.  Models are re-trained.')
     return render_template('challenge.html', title='Challenge', form=form)
 
 
@@ -193,3 +192,8 @@ def confusion_matrix_png():
     w = FileWrapper(matrix)
     return Response(w, mimetype='img/png', direct_passthrough=True)
 
+@app.route('/coef_graph.png', methods=['GET', 'POST'])
+def coef_graph_png():
+    graph = Aiml().get_coef_graph()
+    w = FileWrapper(graph)
+    return Response(w, mimetype='img/png', direct_passthrough=True)
