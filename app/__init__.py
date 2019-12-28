@@ -9,8 +9,6 @@ from flask_bootstrap import Bootstrap
 import pprint
 import pandas as pd
 import numpy as np
-import statsmodels.api as sm
-import statsmodels.formula.api as smf
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure

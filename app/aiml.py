@@ -1,4 +1,4 @@
-from app import pd, np, sm, smf, plt, Figure, FigureCanvas, send_file, LinearRegression, train_test_split
+from app import pd, np, plt, Figure, FigureCanvas, send_file, LinearRegression, train_test_split
 from app import KNeighborsClassifier, accuracy_score, KMeans, MLPClassifier, LogisticRegression, confusion_matrix
 from app.models import Match, User, Challenge
 import io, base64
