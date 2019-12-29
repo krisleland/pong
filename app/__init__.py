@@ -21,7 +21,7 @@ from sklearn.neural_network import MLPClassifier
 import io
 
 
-app = Flask(__name__, static_folder='templates/static')
+app = Flask(__name__)
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
